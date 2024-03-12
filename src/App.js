@@ -116,6 +116,11 @@ function App() {
         })
 
         existingObj.imagePathList.push(currentObj.imagePath)
+        existingObj.money = (
+          parseInt(existingObj.money) + parseInt(currentObj.money)
+        ).toString()
+        existingObj.restaurant += `,${currentObj.restaurant}`
+        existingObj.imageName += ` / ${currentObj.imageName}`
       } else {
         const newObj = { ...currentObj, imagePathList: [currentObj.imagePath] }
         acc.push(newObj)
@@ -126,7 +131,6 @@ function App() {
 
     return result
   }
-
   const handleChange = async (event) => {
     const [tempImagePathList, imageNameList] = createObjectURL(
       event.target.files,
