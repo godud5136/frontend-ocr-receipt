@@ -36,7 +36,8 @@ function App() {
         })
         .then(({ data: { text } }) => {
           const money = convertOCRmoney(text)
-          const temp = convertOCR(text, money)
+          const date = convertOCRDate(text)
+          const temp = convertOCR(money, date)
           const temp2 = convertOCRrestaurant(text)
 
           return {
@@ -44,6 +45,7 @@ function App() {
             temp,
             restaurant: temp2,
             money,
+            date,
             imageName: imageNameList[i],
           }
         })
@@ -56,6 +58,18 @@ function App() {
     setIsLoading(false)
 
     return results
+  }
+
+  const convertOCRDate = (ocr) => {
+    const datePattern = /(\d{4}.\d{2}.\d{2})/
+
+    // 날짜 추출
+    const dateMatch = ocr.match(datePattern)
+    const paymentDate = dateMatch ? dateMatch[1] : '날짜를 찾을 수 없음'
+    // 날짜를 형식에 맞게 변환
+    const formattedDate = paymentDate.replace(/\./g, '').substring(2)
+
+    return formattedDate
   }
 
   const convertOCRmoney = (ocr) => {
@@ -76,21 +90,11 @@ function App() {
     return formattedNumber
   }
 
-  const convertOCR = (ocr, money) => {
-    // 정규 표현식을 사용하여 날짜와 결제 금액 추출
-    const datePattern = /(\d{4}.\d{2}.\d{2})/
-
-    // 날짜 추출
-    const dateMatch = ocr.match(datePattern)
-    const paymentDate = dateMatch ? dateMatch[1] : '날짜를 찾을 수 없음'
-    // 날짜를 형식에 맞게 변환
-    const formattedDate = paymentDate.replace(/\./g, '').substring(2)
-
-    return `식비_점심_${money}원_${formattedDate}_${name}`
+  const convertOCR = (money, date) => {
+    return `식비_점심_${money}원_${date}_${name}`
   }
 
   const convertOCRrestaurant = (ocr) => {
-    // 정규표현식 패턴
     const restaurantPattern = /가 맹 점 명\s*(.+?)\n/
     // 결과 출력
     const convertOCRMatch = ocr.match(restaurantPattern)
@@ -139,9 +143,30 @@ function App() {
     const ocr = await getOCR(tempImagePathList, imageNameList)
 
     const result = convertForSameDate(ocr)
+    const sort = result.sort((a, b) => a.date - b.date)
 
-    setResult(result)
+    setResult(sort)
     event.target.value = null
+  }
+
+  const handleDrop = async (event) => {
+    event.preventDefault()
+
+    if (!name) return alert('이름을 작성해주세요 :)')
+
+    const files = event.dataTransfer.files
+    const [tempImagePathList, imageNameList] = createObjectURL(files)
+
+    const ocr = await getOCR(tempImagePathList, imageNameList)
+
+    const convertedResult = convertForSameDate(ocr)
+    const sortedResult = convertedResult.sort((a, b) => a.date - b.date)
+
+    setResult(sortedResult)
+  }
+
+  const handleDragOver = (event) => {
+    event.preventDefault()
   }
 
   const handleChangeName = (event) => {
@@ -157,7 +182,25 @@ function App() {
         <p>이름을 적은 후, 파일 선택을 눌러주세요</p>
         <input value={name} onChange={handleChangeName} />
         <h3>이미지 업로드</h3>
-        <input type="file" multiple onChange={handleChange} disabled={!name} />
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          style={{
+            border: '2px dashed #ccc',
+            padding: '20px',
+            textAlign: 'center',
+          }}
+        >
+          <input
+            type="file"
+            multiple
+            onChange={handleChange}
+            disabled={!name}
+          />
+          <p>Drag and drop files here</p>
+          {/* Display your result here */}
+        </div>
+
         {/* {imagePath && (imagePath.map((path) => { return (
             <div className='image-path'>
               <img src={path} className="upload_img" alt='upload_img'/>
