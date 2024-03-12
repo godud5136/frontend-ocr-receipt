@@ -10,17 +10,19 @@ function App() {
 
   const createObjectURL = (files) => {
     let result = []
+    let imageNameList = []
 
     for (let i = 0; i < files.length; i++) {
       const url = URL.createObjectURL(files[i])
 
       result.push(url)
+      imageNameList.push(files[i].name)
     }
 
-    return result
+    return [result, imageNameList]
   }
 
-  const getOCR = async (imagePath) => {
+  const getOCR = async (imagePath, imageNameList) => {
     let promises = []
 
     setIsLoading(true)
@@ -37,7 +39,13 @@ function App() {
           const temp = convertOCR(text, money)
           const temp2 = convertOCRrestaurant(text)
 
-          return { imagePath: imagePath[i], temp, restaurant: temp2, money }
+          return {
+            imagePath: imagePath[i],
+            temp,
+            restaurant: temp2,
+            money,
+            imageName: imageNameList[i],
+          }
         })
 
       promises.push(promise)
@@ -120,9 +128,11 @@ function App() {
   }
 
   const handleChange = async (event) => {
-    const tempImagePathList = createObjectURL(event.target.files)
+    const [tempImagePathList, imageNameList] = createObjectURL(
+      event.target.files,
+    )
 
-    const ocr = await getOCR(tempImagePathList)
+    const ocr = await getOCR(tempImagePathList, imageNameList)
 
     const result = convertForSameDate(ocr)
 
@@ -191,7 +201,13 @@ function App() {
                       복사
                     </button>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '20px',
+                    }}
+                  >
                     <p style={{ marginRight: '10px' }}>{item.restaurant}</p>
                     <button
                       onClick={() =>
@@ -200,6 +216,9 @@ function App() {
                     >
                       복사
                     </button>
+                  </div>
+                  <div>
+                    <p style={{ marginRight: '10px' }}>{item.imageName}</p>
                   </div>
                 </div>
               )
