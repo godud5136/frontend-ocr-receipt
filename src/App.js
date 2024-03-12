@@ -33,10 +33,11 @@ function App() {
           console.error(err)
         })
         .then(({ data: { text } }) => {
-          const temp = convertOCR(text)
+          const money = convertOCRmoney(text)
+          const temp = convertOCR(text, money)
           const temp2 = convertOCRrestaurant(text)
 
-          return { imagePath: imagePath[i], temp, restaurant: temp2 }
+          return { imagePath: imagePath[i], temp, restaurant: temp2, money }
         })
 
       promises.push(promise)
@@ -49,16 +50,8 @@ function App() {
     return results
   }
 
-  const convertOCR = (ocr) => {
-    // 정규 표현식을 사용하여 날짜와 결제 금액 추출
-    const datePattern = /(\d{4}.\d{2}.\d{2})/
+  const convertOCRmoney = (ocr) => {
     const amountPattern = /결제 금액 (\d{1,3}.\d{3})/
-
-    // 날짜 추출
-    const dateMatch = ocr.match(datePattern)
-    const paymentDate = dateMatch ? dateMatch[1] : '날짜를 찾을 수 없음'
-    // 날짜를 형식에 맞게 변환
-    const formattedDate = paymentDate.replace(/\./g, '').substring(2)
 
     // 결제 금액 추출
     const amountMatch = ocr.match(amountPattern)
@@ -72,7 +65,20 @@ function App() {
       ? paymentAmount.replace(/,/g, '')
       : paymentAmount.replace('.', '')
 
-    return `식비_점심_${formattedNumber}원_${formattedDate}_${name}`
+    return formattedNumber
+  }
+
+  const convertOCR = (ocr, money) => {
+    // 정규 표현식을 사용하여 날짜와 결제 금액 추출
+    const datePattern = /(\d{4}.\d{2}.\d{2})/
+
+    // 날짜 추출
+    const dateMatch = ocr.match(datePattern)
+    const paymentDate = dateMatch ? dateMatch[1] : '날짜를 찾을 수 없음'
+    // 날짜를 형식에 맞게 변환
+    const formattedDate = paymentDate.replace(/\./g, '').substring(2)
+
+    return `식비_점심_${money}원_${formattedDate}_${name}`
   }
 
   const convertOCRrestaurant = (ocr) => {
@@ -131,6 +137,9 @@ function App() {
   return (
     <div className="App">
       <main className="App-main">
+        <a href="https://me.mediflow.kr/" target="_blank">
+          메디플로우
+        </a>
         <p>이름을 적은 후, 파일 선택을 눌러주세요</p>
         <input value={name} onChange={handleChangeName} />
         <h3>이미지 업로드</h3>
@@ -164,6 +173,20 @@ function App() {
                     <p style={{ marginRight: '10px' }}>{item.temp}</p>
                     <button
                       onClick={() => navigator.clipboard.writeText(item.temp)}
+                    >
+                      복사
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '20px',
+                    }}
+                  >
+                    <p style={{ marginRight: '10px' }}>{item.money}</p>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(item.money)}
                     >
                       복사
                     </button>
