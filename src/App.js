@@ -44,6 +44,7 @@ function App() {
     const results = await Promise.all(promises)
 
     setIsLoading(false)
+
     return results
   }
 
@@ -107,6 +108,7 @@ function App() {
     const result = convertForSameDate(ocr)
 
     setResult(result)
+    event.target.value = null
   }
 
   const handleChangeName = (event) => {
@@ -129,18 +131,24 @@ function App() {
 
         <h3>인식 결과</h3>
 
-        {isLoading && <span>생성 중입니다. 조금만 기다려주세요 :)</span>}
-
-        {result?.map((item, index) => {
-          return (
-            <div key={index}>
-              <p>{item.temp}</p>
-              <button onClick={() => navigator.clipboard.writeText(item.temp)}>
-                복사
-              </button>
-            </div>
-          )
-        })}
+        {isLoading ? (
+          <span>생성 중입니다. 조금만 기다려주세요 :)</span>
+        ) : (
+          <>
+            {result?.map((item, index) => {
+              return (
+                <div key={index}>
+                  <p>{item.temp}</p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(item.temp)}
+                  >
+                    복사
+                  </button>
+                </div>
+              )
+            })}
+          </>
+        )}
       </main>
     </div>
   )
