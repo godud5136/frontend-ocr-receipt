@@ -34,8 +34,9 @@ function App() {
         })
         .then(({ data: { text } }) => {
           const temp = convertOCR(text)
+          const temp2 = convertOCRrestaurant(text)
 
-          return { imagePath: imagePath[i], temp }
+          return { imagePath: imagePath[i], temp, restaurant: temp2 }
         })
 
       promises.push(promise)
@@ -72,6 +73,18 @@ function App() {
       : paymentAmount.replace('.', '')
 
     return `식비_점심_${formattedNumber}원_${formattedDate}_${name}`
+  }
+
+  const convertOCRrestaurant = (ocr) => {
+    // 정규표현식 패턴
+    const restaurantPattern = /가 맹 점 명\s*(.+?)\n/
+    // 결과 출력
+    const convertOCRMatch = ocr.match(restaurantPattern)
+    const merchantName = convertOCRMatch
+      ? convertOCRMatch[1].trim()
+      : '가맹점명을 찾을 수 없습니다.'
+
+    return merchantName.replaceAll(' ', '')
   }
 
   const convertForSameDate = (inputArray) => {
@@ -137,13 +150,34 @@ function App() {
           <>
             {result?.map((item, index) => {
               return (
-                <div key={index}>
-                  <p>{item.temp}</p>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(item.temp)}
+                <div
+                  key={index}
+                  style={{ display: 'flex', marginBottom: '40px' }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '20px',
+                    }}
                   >
-                    복사
-                  </button>
+                    <p style={{ marginRight: '10px' }}>{item.temp}</p>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(item.temp)}
+                    >
+                      복사
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <p style={{ marginRight: '10px' }}>{item.restaurant}</p>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(item.restaurant)
+                      }
+                    >
+                      복사
+                    </button>
+                  </div>
                 </div>
               )
             })}
