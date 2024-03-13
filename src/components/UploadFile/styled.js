@@ -39,7 +39,7 @@ export const Container = styled.div`
   .file-ocr-receipt-wrap {
     padding: 20px 20px 15px 20px;
 
-    max-height: 600px;
+    max-height: calc(100vh - 450px);
     overflow-y: auto;
 
     border: 1px solid rgb(229, 234, 242);
