@@ -1,279 +1,157 @@
-import { useState } from 'react'
-import Tesseract from 'tesseract.js'
+import { useEffect, useState } from 'react'
+import _ from 'lodash'
 
-import './App.css'
+import TextField from '@mui/material/TextField'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
+import { Alert, Snackbar } from '@mui/material'
+
+import UploadFile from './components/UploadFile'
+
+import '@fontsource/roboto/300.css'
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
+
+import mediflowLogo from './assets/logo.svg'
+import { Container } from './styled'
 
 function App() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [result, setResult] = useState([])
+  const [isChecked, setIsChecked] = useState(
+    Boolean(localStorage.getItem('name')),
+  )
   const [name, setName] = useState('')
-
-  const createObjectURL = (files) => {
-    let result = []
-    let imageNameList = []
-
-    for (let i = 0; i < files.length; i++) {
-      const url = URL.createObjectURL(files[i])
-
-      result.push(url)
-      imageNameList.push(files[i].name)
-    }
-
-    return [result, imageNameList]
-  }
-
-  const getOCR = async (imagePath, imageNameList) => {
-    let promises = []
-
-    setIsLoading(true)
-
-    for (let i = 0; i < imagePath.length; i++) {
-      const promise = Tesseract.recognize(imagePath[i], 'eng+kor', {
-        logger: (m) => {},
-      })
-        .catch((err) => {
-          console.error(err)
-        })
-        .then(({ data: { text } }) => {
-          const money = convertOCRmoney(text)
-          const date = convertOCRDate(text)
-          const temp = convertOCR(money, date)
-          const temp2 = convertOCRrestaurant(text)
-
-          return {
-            imagePath: imagePath[i],
-            temp,
-            restaurant: temp2,
-            money,
-            date,
-            imageName: imageNameList[i],
-          }
-        })
-
-      promises.push(promise)
-    }
-
-    const results = await Promise.all(promises)
-
-    setIsLoading(false)
-
-    return results
-  }
-
-  const convertOCRDate = (ocr) => {
-    const datePattern = /(\d{4}.\d{2}.\d{2})/
-
-    // 날짜 추출
-    const dateMatch = ocr.match(datePattern)
-    const paymentDate = dateMatch ? dateMatch[1] : '날짜를 찾을 수 없음'
-    // 날짜를 형식에 맞게 변환
-    const formattedDate = paymentDate.replace(/\./g, '').substring(2)
-
-    return formattedDate
-  }
-
-  const convertOCRmoney = (ocr) => {
-    const amountPattern = /결제 금액 (\d{1,3}.\d{3})/
-
-    // 결제 금액 추출
-    const amountMatch = ocr.match(amountPattern)
-
-    const paymentAmount = amountMatch
-      ? amountMatch[1]
-      : '결제 금액을 찾을 수 없음'
-
-    // 쉼표(,)를 제거하고 숫자로 형변환
-    const formattedNumber = paymentAmount.includes(',')
-      ? paymentAmount.replace(/,/g, '')
-      : paymentAmount.replace('.', '')
-
-    return formattedNumber
-  }
-
-  const convertOCR = (money, date) => {
-    return `식비_점심_${money}원_${date}_${name}`
-  }
-
-  const convertOCRrestaurant = (ocr) => {
-    const restaurantPattern = /가 맹 점 명\s*(.+?)\n/
-    // 결과 출력
-    const convertOCRMatch = ocr.match(restaurantPattern)
-    const merchantName = convertOCRMatch
-      ? convertOCRMatch[1].trim()
-      : '가맹점명을 찾을 수 없습니다.'
-
-    return merchantName.replaceAll(' ', '')
-  }
-
-  const convertForSameDate = (inputArray) => {
-    const result = inputArray.reduce((acc, currentObj) => {
-      const existingObj = acc.find((obj) =>
-        obj.temp.includes(currentObj.temp.split('_')[3]),
-      )
-
-      if (existingObj) {
-        existingObj.temp = existingObj.temp.replace(/_(\d+)원/, (match, p1) => {
-          const newPrice =
-            parseInt(p1, 10) +
-            parseInt(currentObj.temp.match(/_(\d+)원/)[1], 10)
-          return `_${newPrice}원`
-        })
-
-        existingObj.imagePathList.push(currentObj.imagePath)
-        existingObj.money = (
-          parseInt(existingObj.money) + parseInt(currentObj.money)
-        ).toString()
-        existingObj.restaurant += `,${currentObj.restaurant}`
-        existingObj.imageName += ` / ${currentObj.imageName}`
-      } else {
-        const newObj = { ...currentObj, imagePathList: [currentObj.imagePath] }
-        acc.push(newObj)
-      }
-
-      return acc
-    }, [])
-
-    return result
-  }
-  const handleChange = async (event) => {
-    const [tempImagePathList, imageNameList] = createObjectURL(
-      event.target.files,
-    )
-
-    const ocr = await getOCR(tempImagePathList, imageNameList)
-
-    const result = convertForSameDate(ocr)
-    const sort = result.sort((a, b) => a.date - b.date)
-
-    setResult(sort)
-    event.target.value = null
-  }
-
-  const handleDrop = async (event) => {
-    event.preventDefault()
-
-    if (!name) return alert('이름을 작성해주세요 :)')
-
-    const files = event.dataTransfer.files
-    const [tempImagePathList, imageNameList] = createObjectURL(files)
-
-    const ocr = await getOCR(tempImagePathList, imageNameList)
-
-    const convertedResult = convertForSameDate(ocr)
-    const sortedResult = convertedResult.sort((a, b) => a.date - b.date)
-
-    setResult(sortedResult)
-  }
-
-  const handleDragOver = (event) => {
-    event.preventDefault()
-  }
+  const [alert, setAlert] = useState({
+    type: null,
+    message: '',
+    open: false,
+  })
 
   const handleChangeName = (event) => {
     setName(event.target.value)
   }
 
+  const errorValidation = async () => {
+    let temp = false
+
+    if (!name) {
+      setAlert({
+        type: 'error',
+        message: '결재자를 작성해주세요 !',
+        open: true,
+      })
+
+      setTimeout(() => {
+        setAlert({
+          type: null,
+          message: '',
+          open: false,
+        })
+      }, 1000)
+
+      temp = true
+    }
+
+    return temp
+  }
+
+  const handleEnterKeyPress = _.debounce(async (event) => {
+    if (event.key === 'Enter') {
+      console.log('1')
+      const error = await errorValidation()
+      if (error) return
+
+      // Enter 키 눌렸을 때 파일 선택 클릭
+      document.getElementById('formId').click()
+    }
+  }, 400)
+
+  const handleCheckboxChange = (event) => {
+    const checked = event.target.checked
+
+    // 체크박스를 클릭했을 때 localStorage에 'name' 키로 데이터 저장
+    if (checked) {
+      localStorage.setItem('name', name)
+    } else {
+      // 체크박스를 false로 변경할 때 localStorage에서 'name' 키 삭제
+      localStorage.removeItem('name')
+    }
+
+    setIsChecked(checked)
+  }
+
+  useEffect(() => {
+    // 페이지가 마운트될 때 localStorage에서 'name' 키의 데이터 가져오기
+    const storedValue = localStorage.getItem('name')
+    setIsChecked(Boolean(storedValue))
+    setName(storedValue)
+  }, [])
+
   return (
-    <div className="App">
-      <main className="App-main">
-        <a href="https://me.mediflow.kr/" target="_blank">
-          메디플로우
-        </a>
-        <p>이름을 적은 후, 파일 선택을 눌러주세요</p>
-        <input value={name} onChange={handleChangeName} />
-        <h3>이미지 업로드</h3>
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          style={{
-            border: '2px dashed #ccc',
-            padding: '20px',
-            textAlign: 'center',
-          }}
-        >
-          <input
-            type="file"
-            multiple
-            onChange={handleChange}
-            disabled={!name}
+    <Container>
+      <TextField
+        value={name || ''}
+        required
+        id="outlined-required"
+        label="결재자"
+        fullWidth
+        onChange={handleChangeName}
+        onKeyDown={handleEnterKeyPress}
+      />
+      <FormControlLabel
+        control={
+          <Checkbox
+            size="small"
+            onChange={handleCheckboxChange}
+            checked={isChecked}
           />
-          <p>Drag and drop files here</p>
-          {/* Display your result here */}
-        </div>
+        }
+        label="저장하기"
+        sx={{
+          '& .MuiTypography-root': {
+            fontSize: 14,
+            color: 'rgba(0, 0, 0, 0.6)',
+            transform: 'translateY(1px)',
+          },
+        }}
+      />
 
-        {/* {imagePath && (imagePath.map((path) => { return (
-            <div className='image-path'>
-              <img src={path} className="upload_img" alt='upload_img'/>
-            </div>
-          )}
-        ))} */}
+      <UploadFile
+        name={name}
+        setAlert={setAlert}
+        errorValidation={errorValidation}
+      />
 
-        <h3>인식 결과</h3>
+      <div className="mediflow-logo">
+        <a href="https://me.mediflow.kr/" target="_blank">
+          <img src={mediflowLogo} alt="메디플로우" />
+        </a>
+      </div>
 
-        {isLoading ? (
-          <span>생성 중입니다. 조금만 기다려주세요 :)</span>
-        ) : (
-          <>
-            {result?.map((item, index) => {
-              return (
-                <div
-                  key={index}
-                  style={{ display: 'flex', marginBottom: '40px' }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginRight: '20px',
-                    }}
-                  >
-                    <p style={{ marginRight: '10px' }}>{item.temp}</p>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(item.temp)}
-                    >
-                      복사
-                    </button>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginRight: '20px',
-                    }}
-                  >
-                    <p style={{ marginRight: '10px' }}>{item.money}</p>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(item.money)}
-                    >
-                      복사
-                    </button>
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginRight: '20px',
-                    }}
-                  >
-                    <p style={{ marginRight: '10px' }}>{item.restaurant}</p>
-                    <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(item.restaurant)
-                      }
-                    >
-                      복사
-                    </button>
-                  </div>
-                  <div>
-                    <p style={{ marginRight: '10px' }}>{item.imageName}</p>
-                  </div>
-                </div>
-              )
-            })}
-          </>
-        )}
-      </main>
-    </div>
+      {alert.type === 'success' && (
+        <>
+          <Snackbar
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            open={alert.open}
+            autoHideDuration={2000}
+          >
+            <Alert severity="success">{alert.message}</Alert>
+          </Snackbar>
+        </>
+      )}
+
+      {alert.type === 'error' && (
+        <>
+          <Snackbar
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            open={alert.open}
+            autoHideDuration={2000}
+          >
+            <Alert severity="error">{alert.message}</Alert>
+          </Snackbar>
+        </>
+      )}
+    </Container>
   )
 }
 
