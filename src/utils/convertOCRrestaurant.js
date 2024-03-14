@@ -1,5 +1,5 @@
 export default function convertOCRrestaurant(ocr) {
-  const restaurantPattern = /가 맹 점 명\s*(.+?)\n/
+  const restaurantPattern = /가맹점명\s*(.+?)\n/
   // 결과 출력
   const convertOCRMatch = ocr.match(restaurantPattern)
   const merchantName = convertOCRMatch

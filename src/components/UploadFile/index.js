@@ -29,7 +29,7 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
     setIsLoading(true)
 
     for (let i = 0; i < imagePath.length; i++) {
-      const promise = Tesseract.recognize(imagePath[i], 'eng+kor', {
+      const promise = Tesseract.recognize(imagePath[i], 'kor', {
         logger: (m) => {},
       })
         .catch((err) => {
