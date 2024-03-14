@@ -80,7 +80,8 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
   const handleDrop = async (event) => {
     event.preventDefault()
 
-    const error = errorValidation()
+    const error = await errorValidation()
+
     if (error) return
 
     const files = event.dataTransfer.files
@@ -167,7 +168,7 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
               className="lottie-txt"
               style={{ display: displayTextIndex === 0 ? 'block' : 'none' }}
             >
-              조금만 더 기다려주세요.
+              조금만 기다려주세요.
             </li>
             <li
               className="lottie-txt"

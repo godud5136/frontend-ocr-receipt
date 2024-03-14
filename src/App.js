@@ -36,7 +36,7 @@ function App() {
     if (!name) {
       setAlert({
         type: 'error',
-        message: '결재자를 작성해주세요 !',
+        message: '제출자를 작성해주세요 !',
         open: true,
       })
 
@@ -92,7 +92,7 @@ function App() {
         value={name || ''}
         required
         id="outlined-required"
-        label="결재자"
+        label="제출자"
         fullWidth
         onChange={handleChangeName}
         onKeyDown={handleEnterKeyPress}
