@@ -6,20 +6,8 @@ export const Container = styled.div`
   padding: 60px 20px;
   margin: 0 auto;
 
-  .mediflow-logo {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-    margin: 0 -30px 0 -20px;
-
-    a {
-      padding: 20px;
-
-      img {
-        display: block;
-        width: 140px;
-        height: 20px;
-      }
-    }
+  .mediflow-btn {
+    margin-top: 30px;
+    text-align: right;
   }
 `

@@ -36,6 +36,21 @@ export const Container = styled.div`
     }
   }
 
+  .lottie-txt-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+
+    .lottie-txt {
+      color: white;
+      font-size: 12px;
+      padding: 10px;
+      background: linear-gradient(to right, #7f14fa, rgb(32, 164, 252));
+      border-radius: 20px;
+      width: fit-content;
+    }
+  }
+
   .file-ocr-receipt-wrap {
     padding: 20px 20px 15px 20px;
 

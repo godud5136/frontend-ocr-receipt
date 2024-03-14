@@ -1,5 +1,6 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import Tesseract from 'tesseract.js'
+import Lottie from 'react-lottie'
 
 import {
   convertOCRmoney,
@@ -14,9 +15,11 @@ import { Container } from './styled.js'
 
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
-import Skeleton from '@mui/material/Skeleton'
+
+import Loading from '../../assets/ai-loading.json'
 
 export default function UploadFile({ name, setAlert, errorValidation }) {
+  const [displayTextIndex, setDisplayTextIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState([])
 
@@ -113,6 +116,23 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
     }, 1000)
   }
 
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: Loading,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice',
+    },
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDisplayTextIndex((prevIndex) => (prevIndex === 0 ? 1 : 0))
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <Container>
       <div
@@ -141,13 +161,21 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
 
       {isLoading ? (
         <>
-          <Skeleton style={{ marginBottom: '-30px' }} height={100} />
-          <Skeleton
-            height={100}
-            style={{ marginBottom: '-30px' }}
-            animation="wave"
-          />
-          <Skeleton height={100} animation={false} />
+          <Lottie options={defaultOptions} height={150} width={150} />
+          <ul className="lottie-txt-wrap">
+            <li
+              className="lottie-txt"
+              style={{ display: displayTextIndex === 0 ? 'block' : 'none' }}
+            >
+              영수증 결과물을 생성 중이에요.
+            </li>
+            <li
+              className="lottie-txt"
+              style={{ display: displayTextIndex === 1 ? 'block' : 'none' }}
+            >
+              조금만 더 기다려주세요.
+            </li>
+          </ul>
         </>
       ) : (
         <>

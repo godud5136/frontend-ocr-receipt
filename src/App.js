@@ -4,7 +4,7 @@ import _ from 'lodash'
 import TextField from '@mui/material/TextField'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
-import { Alert, Snackbar } from '@mui/material'
+import { Alert, Snackbar, Button } from '@mui/material'
 
 import UploadFile from './components/UploadFile'
 
@@ -13,7 +13,6 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
-import mediflowLogo from './assets/logo.svg'
 import { Container } from './styled'
 
 function App() {
@@ -122,10 +121,14 @@ function App() {
         errorValidation={errorValidation}
       />
 
-      <div className="mediflow-logo">
-        <a href="https://me.mediflow.kr/" target="_blank">
-          <img src={mediflowLogo} alt="메디플로우" />
-        </a>
+      <div className="mediflow-btn">
+        <Button
+          variant="contained"
+          href="https://me.mediflow.kr/"
+          target="_blank"
+        >
+          메디플로우
+        </Button>
       </div>
 
       {alert.type === 'success' && (
