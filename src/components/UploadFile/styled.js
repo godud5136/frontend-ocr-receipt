@@ -1,15 +1,14 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
-  margin-top: 30px;
+  margin-top: 10px;
 
   .file-drop {
     display: flex;
     justify-content: center;
     align-items: center;
 
-    margin-top: auto;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     padding: 20px;
 
     width: calc(100% - 40px);
@@ -39,7 +38,6 @@ export const Container = styled.div`
   .lottie-txt-wrap {
     display: flex;
     justify-content: center;
-    margin-top: 30px;
 
     .lottie-txt {
       color: white;

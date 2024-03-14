@@ -167,13 +167,13 @@ export default function UploadFile({ name, setAlert, errorValidation }) {
               className="lottie-txt"
               style={{ display: displayTextIndex === 0 ? 'block' : 'none' }}
             >
-              영수증 결과물을 생성 중이에요.
+              조금만 더 기다려주세요.
             </li>
             <li
               className="lottie-txt"
               style={{ display: displayTextIndex === 1 ? 'block' : 'none' }}
             >
-              조금만 더 기다려주세요.
+              영수증 결과물을 생성 중이에요.
             </li>
           </ul>
         </>
