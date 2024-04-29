@@ -5,9 +5,13 @@ export default function convertForSameDate(inputArray) {
     )
 
     if (existingObj) {
-      existingObj.temp = existingObj.temp.replace(/_(\d+)원/, (match, p1) => {
-        const newPrice =
-          parseInt(p1, 10) + parseInt(currentObj.temp.match(/_(\d+)원/)[1], 10)
+      existingObj.temp = existingObj.temp?.replace(/_(\d+)원/, (match, p1) => {
+        const objMatch =
+          currentObj.temp?.match(/_(\d+)원/) &&
+          currentObj.temp?.match(/_(\d+)원/)[1]
+        console.log('objMatch', objMatch)
+
+        const newPrice = parseInt(p1, 10) + parseInt(objMatch, 10)
         return `_${newPrice}원`
       })
 
